@@ -1,12 +1,17 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
 require("./config/LoaderEnvironmentVariable");
 const connection = require("./config/Database");
 const authMiddleware = require("./middlewares/Auth");
 const auth = require("./security/Auth");
 const AuthException = require("./exceptions/AuthException");
 const exceptionHandler = require(".//middlewares/ExceptionHandler");
+const UserRepository = require("./repositories/UserRepository");
+const LaunchRepository = require("./repositories/LaunchRepository");
+const launchRepository = new LaunchRepository();
+const userRepository = new UserRepository();
 
 // Setting middleware parse datas to json.
 app.use(bodyParser.json());
@@ -23,12 +28,13 @@ app.post("/auth/login", async (request, response, next) => {
 
 app.post("/users", async (request, response) => {
     const newUser = request.body;
-    await connection('users').insert(newUser);
+    newUser.password = await bcrypt.hash(newUser.password, 10);
+    userRepository.create(newUser)
     response.sendStatus(201);
 });
 
 app.get("/launchs", authMiddleware.isAuthenticated, async (request, response) => {
-    const launchs = await connection("launchs").select();
+    const launchs = await launchRepository.findAll();
     response.json(launchs);
 });
 

@@ -8,9 +8,10 @@ class UserRepository extends Repository {
 
     findByEmail(email) {
         return this.getModel().first().where({
-            email: email,
+            email: email
         });
     }
+    
 };
 
 module.exports = UserRepository;

@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const Token = require("./Token");
 const UserRepository = require("../repositories/UserRepository");
 
@@ -14,6 +15,11 @@ module.exports = {
         const user = await userRepository.findByEmail(credentials.email);
 
         if (!user) {
+            throw new AuthException("Credentials invalids!", 401);
+        }
+
+        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+        if (!isValidPassword) {
             throw new AuthException("Credentials invalids!", 401);
         }
 
